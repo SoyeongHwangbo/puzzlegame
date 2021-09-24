@@ -5,14 +5,19 @@ using namespace bangtal;
 #include <cstdlib>
 #include <ctime>
 #include <Windows.h>
+#include <time.h>
 
 ScenePtr play;
 ObjectPtr game_board[16], game_original[16];
 ObjectPtr startButton;
 
+TimerPtr playingt;
+time_t start_time = 0, end_time = 0;
+float playing_time = 0;						//소요시간 계산을 위한 변수 및 타이머 선언
+
 TimerPtr timer;
 float animationTime = 0.05f;
-int mixCount = 100;
+int mixCount = 50;			
 
 int blank;
 
@@ -57,14 +62,15 @@ int random_move() {
 }
 
 void start_game() {
-	mixCount = 100;
+	mixCount = 50;		
 	timer->set(animationTime);
 	timer->start();
 
 	blank = 15;
 	game_board[blank]->hide();
-
 	startButton->hide();
+
+	time(&start_time);		//시작 시간 체크
 }
 
 bool check_end() {
@@ -76,9 +82,14 @@ bool check_end() {
 
 void end_game() {
 	game_board[blank]->show();
+	startButton->setImage("Images/재시작버튼.png");
+	startButton->locate(play, 900, 550);
 	startButton->show();
 
-	showMessage("완성!");
+	playing_time = difftime(end_time, start_time);		//종료 시간 - 시작 시간
+	playingt = Timer::create(playing_time);
+	showTimer(playingt);
+	showMessage("퍼즐 완성! 소요시간은 위와 같습니다.");
 }
 
 
@@ -95,6 +106,7 @@ void init_game() {
 				game_move(index);
 				
 				if (check_end()) {
+					time(&end_time);		//종료 시간 체크
 					end_game();
 				}
 			}
